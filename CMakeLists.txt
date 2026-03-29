@@ -14,6 +14,13 @@ include_directories(
 
 add_executable(bitcoinsolar_opensea_client
     src/main.cpp
+    src/OpenSeaClient.cpp
+    src/Gallery.cpp
+    src/Metadata.cpp
+    src/Rarity.cpp
+    src/RarityEngine.cpp
+    src/Marketplace.cpp
+    src/MintingDashboard.cpp
 )
 
 target_link_libraries(bitcoinsolar_opensea_client
