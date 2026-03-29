@@ -6,8 +6,6 @@
 #    B) CMake bootstrap
 #    C) Environment setup (MCP token, dependencies)
 #
-#  Production‑grade version
-#
 
 set -e
 
@@ -16,9 +14,6 @@ echo " BitcoinSolar OpenSea Client — Configure Script"
 echo "============================================================"
 echo
 
-# -------------------------------------------------------------
-# 1. Check OS
-# -------------------------------------------------------------
 OS=$(uname -s)
 echo "[INFO] Detected OS: $OS"
 
@@ -32,9 +27,6 @@ case "$OS" in
         ;;
 esac
 
-# -------------------------------------------------------------
-# 2. Check for required tools
-# -------------------------------------------------------------
 echo
 echo "[INFO] Checking required tools..."
 
@@ -50,9 +42,6 @@ for tool in "${REQUIRED_TOOLS[@]}"; do
     fi
 done
 
-# -------------------------------------------------------------
-# 3. Check for libcurl development headers
-# -------------------------------------------------------------
 echo
 echo "[INFO] Checking libcurl development headers..."
 
@@ -64,24 +53,15 @@ else
     exit 1
 fi
 
-# -------------------------------------------------------------
-# 4. Check for json.hpp (nlohmann::json)
-# -------------------------------------------------------------
 echo
-echo "[INFO] Checking for nlohmann::json header..."
-
-if [ -f "third_party/json.hpp" ]; then
-    echo "[OK] json.hpp found in third_party/"
-else
-    echo "[ERROR] json.hpp missing"
-    echo "        Download from: https://github.com/nlohmann/json/releases"
-    echo "        Place single-header version at: third_party/json.hpp"
+echo "[INFO] Using built‑in minimal JSON parser"
+if [ ! -f "third_party/json.hpp" ]; then
+    echo "[ERROR] Missing file: third_party/json.hpp"
+    echo "Create the file and paste the minimal JSON parser into it."
     exit 1
 fi
+echo "[OK] Minimal JSON parser detected"
 
-# -------------------------------------------------------------
-# 5. Check MCP token
-# -------------------------------------------------------------
 echo
 echo "[INFO] Checking OpenSea MCP token..."
 
@@ -101,9 +81,6 @@ else
     echo "[OK] MCP token detected"
 fi
 
-# -------------------------------------------------------------
-# 6. Create build directory and run CMake
-# -------------------------------------------------------------
 echo
 echo "[INFO] Bootstrapping CMake build..."
 
