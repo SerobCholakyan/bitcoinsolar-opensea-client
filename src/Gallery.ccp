@@ -4,10 +4,12 @@
 
 void Gallery::printSummary(const std::vector<json>& assets) {
     std::cout << "=== GALLERY (" << assets.size() << " NFTs) ===\n";
-    int idx = 1;
+    int index = 1;
+
     for (const auto& asset : assets) {
-        std::cout << idx++ << ". "
+        std::cout << index++ << ". "
                   << Metadata::getName(asset)
-                  << " — " << Metadata::getImageUrl(asset) << "\n";
+                  << " — " << Metadata::getImageUrl(asset)
+                  << "\n";
     }
 }
