@@ -9,18 +9,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
-
-    - name: Configure
-      run: chmod +x configure && ./configure
-
-    - name: Build
-      run: cd build && make -j4
-
-    - name: Run binary
       run: |
-        export OPENSEA_MCP_TOKEN="dummy"
+        sudo apt-get update
+        sudo apt-get install -y libcurl4-openssl-dev cmake g++
+
+    - name: Fix configure permissions (iPhone-safe)
+      run: chmod +x configure
+
+    - name: Run configure script
+      run: ./configure
+
+    - name: Build project
+      run: |
+        cd build
+        make -j4
+
+    - name: Run binary (non-fatal)
+      env:
+        OPENSEA_MCP_TOKEN: "dummy-token"
+      run: |
+        echo "Running binary for smoke test"
         ./build/bitcoinsolar_opensea_client || true
