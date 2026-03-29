@@ -1,11 +1,12 @@
 #pragma once
-#include "OpenSeaClient.h"
+#include "json.hpp"
+#include <string>
 
-inline json getNFT(OpenSeaClient& client,
-                   const std::string& chain,
-                   const std::string& contract,
-                   const std::string& tokenId) {
-    std::string url = "https://api.opensea.io/api/v2/chain/" + chain +
-                      "/contract/" + contract + "/nfts/" + tokenId;
-    return client.get(url);
-}
+using json = Json;
+
+class Metadata {
+public:
+    static std::string getName(const json& asset);
+    static std::string getDescription(const json& asset);
+    static std::string getImageUrl(const json& asset);
+};
