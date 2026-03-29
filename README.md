@@ -1,29 +1,17 @@
-# bitcoinsolar-opensea-client
-# BitcoinSolar OpenSea C++ Client
+# BitcoinSolar OpenSea Client (C++)
 
-Production-style C++ client for:
-- NFT gallery
-- Rarity explorer
-- Metadata viewer
-- Marketplace (read-only)
-- Minting dashboard (monitoring)
+Production‑grade C++ client for interacting with the OpenSea API using an MCP token.
+
+Features:
+- NFT Gallery
+- Metadata Viewer
+- Rarity Explorer
+- Marketplace (read‑only)
+- Minting Dashboard (monitoring)
 
 ## Build
 
 ```bash
-mkdir build && cd build
-cmake ..
-make
-
-
-Requires:
-
-• libcurl
-• C++17
-• nlohmann::json (included as third_party/json.hpp)
-
-
-Set your MCP token:
-
-export OPENSEA_MCP_TOKEN=your_token_here
-./bitcoinsolar_opensea_client
+./configure
+cd build
+make -j4
