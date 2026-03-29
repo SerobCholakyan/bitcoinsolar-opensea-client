@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
-#
-#  BitcoinSolar OpenSea Client — Configure Script (Option E)
-#  Combines:
-#    A) Autotools‑style system checks
-#    B) CMake bootstrap
-#    C) Environment setup (MCP token, dependencies)
-#
-
 set -e
 
 echo "============================================================"
 echo " BitcoinSolar OpenSea Client — Configure Script"
 echo "============================================================"
-echo
 
 OS=$(uname -s)
 echo "[INFO] Detected OS: $OS"
@@ -27,73 +18,61 @@ case "$OS" in
         ;;
 esac
 
-echo
 echo "[INFO] Checking required tools..."
-
-REQUIRED_TOOLS=("cmake" "g++" "curl" "pkg-config")
-
-for tool in "${REQUIRED_TOOLS[@]}"; do
-    if ! command -v "$tool" >/dev/null 2>&1; then
-        echo "[ERROR] Missing required tool: $tool"
-        echo "        Please install it and re-run ./configure"
+REQ=("cmake" "g++" "curl" "pkg-config")
+for t in "${REQ[@]}"; do
+    if ! command -v "$t" >/dev/null 2>&1; then
+        echo "[ERROR] Missing required tool: $t"
         exit 1
     else
-        echo "[OK] $tool found"
+        echo "[OK] $t found"
     fi
 done
 
-echo
 echo "[INFO] Checking libcurl development headers..."
-
 if pkg-config --exists libcurl; then
     echo "[OK] libcurl detected"
 else
     echo "[ERROR] libcurl development headers not found"
-    echo "        Install libcurl-dev or libcurl-devel"
     exit 1
 fi
 
-echo
 echo "[INFO] Using built‑in minimal JSON parser"
 if [ ! -f "third_party/json.hpp" ]; then
     echo "[ERROR] Missing file: third_party/json.hpp"
-    echo "Create the file and paste the minimal JSON parser into it."
     exit 1
 fi
-echo "[OK] Minimal JSON parser detected"
 
-echo
 echo "[INFO] Checking OpenSea MCP token..."
 
 if [ -z "$OPENSEA_MCP_TOKEN" ]; then
     echo "[WARN] OPENSEA_MCP_TOKEN is not set"
-    echo "       You can set it now:"
-    read -p "       Enter MCP token (or leave blank to skip): " TOKEN
 
-    if [ -n "$TOKEN" ]; then
-        export OPENSEA_MCP_TOKEN="$TOKEN"
-        echo "export OPENSEA_MCP_TOKEN=\"$TOKEN\"" >> ~/.bashrc
-        echo "[OK] MCP token saved to environment"
+    # Detect CI environment
+    if [ "$CI" = "true" ]; then
+        echo "[INFO] Running in CI — skipping token prompt"
     else
-        echo "[WARN] Continuing without MCP token"
+        echo "       You can set it now:"
+        read -p "       Enter MCP token (or leave blank to skip): " TOKEN
+
+        if [ -n "$TOKEN" ]; then
+            export OPENSEA_MCP_TOKEN="$TOKEN"
+            echo "export OPENSEA_MCP_TOKEN=\"$TOKEN\"" >> ~/.bashrc
+            echo "[OK] MCP token saved"
+        else
+            echo "[WARN] Continuing without MCP token"
+        fi
     fi
 else
     echo "[OK] MCP token detected"
 fi
 
-echo
 echo "[INFO] Bootstrapping CMake build..."
-
 mkdir -p build
 cd build
-
 cmake -DCMAKE_BUILD_TYPE=Release ..
 
-echo
 echo "[OK] Configure completed successfully."
-echo "------------------------------------------------------------"
 echo "Next steps:"
 echo "  cd build"
 echo "  make -j4"
-echo "------------------------------------------------------------"
-echo
