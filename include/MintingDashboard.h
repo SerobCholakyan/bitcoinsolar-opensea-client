@@ -1,14 +1,10 @@
 #pragma once
-#include "Metadata.h"
+#include "json.hpp"
+#include <string>
 
-inline bool nftExists(OpenSeaClient& client,
-                      const std::string& chain,
-                      const std::string& contract,
-                      const std::string& tokenId) {
-    try {
-        auto nft = getNFT(client, chain, contract, tokenId);
-        return nft.contains("nft");
-    } catch (...) {
-        return false;
-    }
-}
+using json = Json;
+
+class MintingDashboard {
+public:
+    static void printMintStatus(const json& asset);
+};
