@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 #
 #  BitcoinSolar OpenSea Client — Configure Script (Option E)
+#  Combines:
+#    A) Autotools‑style system checks
+#    B) CMake bootstrap
+#    C) Environment setup (MCP token, dependencies)
+#
+#  Production‑grade version
 #
 
 set -e
@@ -10,6 +16,9 @@ echo " BitcoinSolar OpenSea Client — Configure Script"
 echo "============================================================"
 echo
 
+# -------------------------------------------------------------
+# 1. Check OS
+# -------------------------------------------------------------
 OS=$(uname -s)
 echo "[INFO] Detected OS: $OS"
 
@@ -23,6 +32,9 @@ case "$OS" in
         ;;
 esac
 
+# -------------------------------------------------------------
+# 2. Check for required tools
+# -------------------------------------------------------------
 echo
 echo "[INFO] Checking required tools..."
 
@@ -31,54 +43,80 @@ REQUIRED_TOOLS=("cmake" "g++" "curl" "pkg-config")
 for tool in "${REQUIRED_TOOLS[@]}"; do
     if ! command -v "$tool" >/dev/null 2>&1; then
         echo "[ERROR] Missing required tool: $tool"
+        echo "        Please install it and re-run ./configure"
         exit 1
     else
         echo "[OK] $tool found"
     fi
 done
 
+# -------------------------------------------------------------
+# 3. Check for libcurl development headers
+# -------------------------------------------------------------
 echo
-echo "[INFO] Checking libcurl..."
+echo "[INFO] Checking libcurl development headers..."
 
 if pkg-config --exists libcurl; then
     echo "[OK] libcurl detected"
 else
-    echo "[ERROR] libcurl-dev not found"
+    echo "[ERROR] libcurl development headers not found"
+    echo "        Install libcurl-dev or libcurl-devel"
     exit 1
 fi
 
+# -------------------------------------------------------------
+# 4. Check for json.hpp (nlohmann::json)
+# -------------------------------------------------------------
 echo
-echo "[INFO] Checking json.hpp..."
+echo "[INFO] Checking for nlohmann::json header..."
 
 if [ -f "third_party/json.hpp" ]; then
-    echo "[OK] json.hpp found"
+    echo "[OK] json.hpp found in third_party/"
 else
-    echo "[ERROR] json.hpp missing in third_party/"
+    echo "[ERROR] json.hpp missing"
+    echo "        Download from: https://github.com/nlohmann/json/releases"
+    echo "        Place single-header version at: third_party/json.hpp"
     exit 1
 fi
 
+# -------------------------------------------------------------
+# 5. Check MCP token
+# -------------------------------------------------------------
 echo
-echo "[INFO] Checking MCP token..."
+echo "[INFO] Checking OpenSea MCP token..."
 
 if [ -z "$OPENSEA_MCP_TOKEN" ]; then
-    echo "[WARN] OPENSEA_MCP_TOKEN not set"
-    read -p "Enter MCP token (optional): " TOKEN
+    echo "[WARN] OPENSEA_MCP_TOKEN is not set"
+    echo "       You can set it now:"
+    read -p "       Enter MCP token (or leave blank to skip): " TOKEN
+
     if [ -n "$TOKEN" ]; then
         export OPENSEA_MCP_TOKEN="$TOKEN"
         echo "export OPENSEA_MCP_TOKEN=\"$TOKEN\"" >> ~/.bashrc
-        echo "[OK] MCP token saved"
+        echo "[OK] MCP token saved to environment"
+    else
+        echo "[WARN] Continuing without MCP token"
     fi
 else
     echo "[OK] MCP token detected"
 fi
 
+# -------------------------------------------------------------
+# 6. Create build directory and run CMake
+# -------------------------------------------------------------
 echo
-echo "[INFO] Bootstrapping CMake..."
+echo "[INFO] Bootstrapping CMake build..."
 
 mkdir -p build
 cd build
+
 cmake -DCMAKE_BUILD_TYPE=Release ..
 
 echo
-echo "[OK] Configure complete."
-echo "Run: cd build && make -j4"
+echo "[OK] Configure completed successfully."
+echo "------------------------------------------------------------"
+echo "Next steps:"
+echo "  cd build"
+echo "  make -j4"
+echo "------------------------------------------------------------"
+echo
