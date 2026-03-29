@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#
+#  BitcoinSolar OpenSea Client — Configure Script (Option E)
+#
+
+set -e
+
+echo "============================================================"
+echo " BitcoinSolar OpenSea Client — Configure Script"
+echo "============================================================"
+echo
+
+OS=$(uname -s)
+echo "[INFO] Detected OS: $OS"
+
+case "$OS" in
+    Linux|Darwin)
+        echo "[OK] Supported OS"
+        ;;
+    *)
+        echo "[ERROR] Unsupported OS: $OS"
+        exit 1
+        ;;
+esac
+
+echo
+echo "[INFO] Checking required tools..."
+
+REQUIRED_TOOLS=("cmake" "g++" "curl" "pkg-config")
+
+for tool in "${REQUIRED_TOOLS[@]}"; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        echo "[ERROR] Missing required tool: $tool"
+        exit 1
+    else
+        echo "[OK] $tool found"
+    fi
+done
+
+echo
+echo "[INFO] Checking libcurl..."
+
+if pkg-config --exists libcurl; then
+    echo "[OK] libcurl detected"
+else
+    echo "[ERROR] libcurl-dev not found"
+    exit 1
+fi
+
+echo
+echo "[INFO] Checking json.hpp..."
+
+if [ -f "third_party/json.hpp" ]; then
+    echo "[OK] json.hpp found"
+else
+    echo "[ERROR] json.hpp missing in third_party/"
+    exit 1
+fi
+
+echo
+echo "[INFO] Checking MCP token..."
+
+if [ -z "$OPENSEA_MCP_TOKEN" ]; then
+    echo "[WARN] OPENSEA_MCP_TOKEN not set"
+    read -p "Enter MCP token (optional): " TOKEN
+    if [ -n "$TOKEN" ]; then
+        export OPENSEA_MCP_TOKEN="$TOKEN"
+        echo "export OPENSEA_MCP_TOKEN=\"$TOKEN\"" >> ~/.bashrc
+        echo "[OK] MCP token saved"
+    fi
+else
+    echo "[OK] MCP token detected"
+fi
+
+echo
+echo "[INFO] Bootstrapping CMake..."
+
+mkdir -p build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+
+echo
+echo "[OK] Configure complete."
+echo "Run: cd build && make -j4"
