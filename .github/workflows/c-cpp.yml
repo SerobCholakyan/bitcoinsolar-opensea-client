@@ -1,35 +1,54 @@
-name: C/C++ Build
+name: C/C++ CI
 
 on:
   push:
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
+    env:
+      HASHICORP_HMAC_KEY: ${{ secrets.HASHICORP_HMAC_KEY }}
+      PACKER_VALIDATION_URL: ${{ secrets.PACKER_VALIDATION_URL }}
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libcurl4-openssl-dev cmake g++
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
 
-    - name: Make configure executable
-      run: chmod +x configure
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build
 
-    - name: Run configure script
-      run: ./configure
+      - name: Build
+        run: |
+          cmake --build build --config Release -- -j$(nproc)
 
-    - name: Build project
-      run: |
-        cd build
-        make -j4
+      - name: Run tests (if any)
+        run: |
+          if [ -f "build/ctest" ] || [ -f "build/CTestTestfile.cmake" ]; then
+            cd build
+            ctest --output-on-failure
+          else
+            echo "No CTest configuration found, skipping tests."
+          fi
 
-    - name: Run binary (non-fatal)
-      env:
-        OPENSEA_MCP_TOKEN: "dummy-token"
-      run: |
-        ./build/bitcoinsolar_opensea_client || true
+      - name: Print env presence (debug only)
+        run: |
+          if [ -z "$HASHICORP_HMAC_KEY" ]; then
+            echo "HASHICORP_HMAC_KEY is NOT set"
+            exit 1
+          fi
+          if [ -z "$PACKER_VALIDATION_URL" ]; then
+            echo "PACKER_VALIDATION_URL is NOT set"
+            exit 1
+          fi
+          echo "Secrets are available to the build."
+          # Do NOT echo the actual values
