@@ -32,5 +32,4 @@ jobs:
       env:
         OPENSEA_MCP_TOKEN: "dummy-token"
       run: |
-        echo "Running binary for smoke test"
         ./build/bitcoinsolar_opensea_client || true
