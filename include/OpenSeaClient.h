@@ -12,9 +12,12 @@ public:
     explicit OpenSeaClient(const std::string& apiKey);
     ~OpenSeaClient();
 
-    std::optional<json> getAsset(const std::string& contractAddress, const std::string& tokenId);
-    std::optional<json> getCollection(const std::string& slug);
-    std::optional<json> getAssetsByOwner(const std::string& owner, int limit = 20);
+    std::optional<json> getAsset(const std::string& contractAddress,
+                                 const std::string& tokenId);
+
+    // Fetch full collection (paginated)
+    std::vector<json> getCollectionAssets(const std::string& slug,
+                                          int pageSize = 50);
 
 private:
     std::string apiKey_;
