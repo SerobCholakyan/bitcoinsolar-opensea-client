@@ -1,3 +1,9 @@
+
+---
+
+### `third_party/json.hpp` (minimal parser)
+
+```cpp
 #pragma once
 #include <string>
 #include <unordered_map>
@@ -5,22 +11,6 @@
 #include <variant>
 #include <stdexcept>
 #include <cctype>
-
-//
-// Minimal JSON parser for BitcoinSolar OpenSea Client
-// Supports:
-//   - objects { }
-//   - arrays [ ]
-//   - strings "text"
-//   - numbers
-//   - booleans
-//   - null
-//
-// Does NOT support:
-//   - unicode escapes
-//   - comments
-//   - advanced number formats
-//
 
 class Json {
 public:
@@ -39,7 +29,6 @@ public:
     Json(const object_t& o) : value(o) {}
     Json(const array_t& a) : value(a) {}
 
-    // Accessors
     bool is_object() const { return std::holds_alternative<object_t>(value); }
     bool is_array()  const { return std::holds_alternative<array_t>(value); }
     bool is_string() const { return std::holds_alternative<std::string>(value); }
@@ -59,7 +48,6 @@ public:
     double number() const { return std::get<double>(value); }
     bool boolean() const { return std::get<bool>(value); }
 
-    // Object access
     Json& operator[](const std::string& key) {
         return std::get<object_t>(value)[key];
     }
@@ -68,7 +56,6 @@ public:
         return std::get<object_t>(value).at(key);
     }
 
-    // Array access
     Json& operator[](size_t idx) {
         return std::get<array_t>(value)[idx];
     }
@@ -77,7 +64,6 @@ public:
         return std::get<array_t>(value)[idx];
     }
 
-    // Parsing
     static Json parse(const std::string& s) {
         size_t i = 0;
         return parse_value(s, i);
@@ -85,7 +71,7 @@ public:
 
 private:
     static void skip_ws(const std::string& s, size_t& i) {
-        while (i < s.size() && std::isspace(s[i])) i++;
+        while (i < s.size() && std::isspace(static_cast<unsigned char>(s[i]))) i++;
     }
 
     static Json parse_value(const std::string& s, size_t& i) {
@@ -97,7 +83,7 @@ private:
         if (c == '{') return parse_object(s, i);
         if (c == '[') return parse_array(s, i);
         if (c == '"') return parse_string(s, i);
-        if (std::isdigit(c) || c == '-') return parse_number(s, i);
+        if (std::isdigit(static_cast<unsigned char>(c)) || c == '-') return parse_number(s, i);
         if (s.compare(i, 4, "true") == 0)  { i += 4; return Json(true); }
         if (s.compare(i, 5, "false") == 0) { i += 5; return Json(false); }
         if (s.compare(i, 4, "null") == 0)  { i += 4; return Json(nullptr); }
@@ -107,7 +93,7 @@ private:
 
     static Json parse_object(const std::string& s, size_t& i) {
         object_t obj;
-        i++; // skip '{'
+        i++; 
         skip_ws(s, i);
 
         if (s[i] == '}') { i++; return obj; }
@@ -134,7 +120,7 @@ private:
 
     static Json parse_array(const std::string& s, size_t& i) {
         array_t arr;
-        i++; // skip '['
+        i++; 
         skip_ws(s, i);
 
         if (s[i] == ']') { i++; return arr; }
@@ -153,7 +139,7 @@ private:
     }
 
     static Json parse_string(const std::string& s, size_t& i) {
-        i++; // skip '"'
+        i++; 
         std::string out;
 
         while (i < s.size()) {
@@ -175,7 +161,7 @@ private:
 
     static Json parse_number(const std::string& s, size_t& i) {
         size_t start = i;
-        while (i < s.size() && (std::isdigit(s[i]) || s[i] == '.' || s[i] == '-' || s[i] == '+'))
+        while (i < s.size() && (std::isdigit(static_cast<unsigned char>(s[i])) || s[i] == '.' || s[i] == '-' || s[i] == '+'))
             i++;
         return Json(std::stod(s.substr(start, i - start)));
     }
